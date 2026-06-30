@@ -3,7 +3,8 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: './',
+  // Use the injected base path in CI (GitHub Pages subpath), fall back to './' locally
+  base: process.env.VITE_BASE_URL ?? './',
   plugins: [
     svelte(),
     VitePWA({
