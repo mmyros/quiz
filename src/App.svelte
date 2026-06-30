@@ -9,8 +9,10 @@
   let total    = $state(0);
   let streak   = $state(0);
   let best     = $state(0);
+  let timer    = null;
 
   function next() {
+    clearTimeout(timer);
     q        = DRILLS[drillIdx].gen();
     selected = null;
   }
@@ -26,23 +28,30 @@
     if (selected !== null) return;
     selected = opt;
     total++;
-    if (opt === q.correct) {
+    const correct = opt === q.correct;
+    if (correct) {
       score++;
       streak++;
       if (streak > best) best = streak;
+      // Auto-advance on correct — keep the flow
+      timer = setTimeout(next, 1800);
     } else {
       streak = 0;
+      // Wrong: stay put so the user reads the explanation, Next button appears
     }
-    setTimeout(next, 1800);
   }
 
   function handlePlay() {
     if (q?.playRoot) playChord(q.playRoot, q.playIntervals);
   }
 
-  // Keyboard: 1–4 to pick, Space/P to play chord
   function onKeydown(e) {
-    if (!q || selected !== null) return;
+    if (!q) return;
+    // Next on Enter/Right when answer shown
+    if (selected !== null && (e.key === 'Enter' || e.key === 'ArrowRight')) {
+      e.preventDefault(); next(); return;
+    }
+    if (selected !== null) return;
     const n = parseInt(e.key);
     if (n >= 1 && n <= q.options.length) { pick(q.options[n - 1]); return; }
     if (e.key === ' ' || e.key === 'p') { e.preventDefault(); handlePlay(); }
@@ -131,13 +140,26 @@
       {/each}
     </div>
 
-    <!-- Feedback + explanation -->
+    <!-- Feedback + explanation + Next button -->
     {#if selected !== null}
-      <div class="text-center text-sm px-2">
-        <span class="font-semibold {selected === q.correct ? 'text-emerald-400' : 'text-red-400'}">
-          {selected === q.correct ? '✓ Correct' : '✗ Nope'}
-        </span>
-        <span class="text-slate-400"> — {q.explanation}</span>
+      {@const wasCorrect = selected === q.correct}
+      <div class="flex items-center gap-3 px-1">
+        <div class="flex-1 text-sm leading-relaxed">
+          <span class="font-semibold {wasCorrect ? 'text-emerald-400' : 'text-red-400'}">
+            {wasCorrect ? '✓ Correct' : '✗ Nope'}
+          </span>
+          <span class="text-slate-400"> — {q.explanation}</span>
+        </div>
+
+        {#if !wasCorrect}
+          <button
+            onclick={next}
+            class="flex-shrink-0 px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600
+                   text-slate-200 font-semibold text-sm transition-colors active:scale-95"
+          >
+            Next →
+          </button>
+        {/if}
       </div>
     {/if}
 
