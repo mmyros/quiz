@@ -26,7 +26,6 @@ function randomRoot() {
 
 // ---------------------------------------------------------------------------
 // Drill 1 — ii→V or V→I  (roots always move P4 upward)
-// Cm7 → F7 → Bbmaj7: each root is a P4 (5 semitones) above the previous
 // ---------------------------------------------------------------------------
 export function nextChordQuestion() {
   const iiRoot = randomRoot();
@@ -42,8 +41,8 @@ export function nextChordQuestion() {
   const toLabel   = isIiToV ? 'V7'          : 'Imaj7';
   const toNote    = isIiToV ? vRoot         : iRoot;
   const fromNote  = isIiToV ? iiRoot        : vRoot;
+  const suffix    = toChord.slice(toNote.length);  // '7' or 'maj7'
 
-  const suffix = toChord.slice(toNote.length);
   const distractors = shuffle(ROOTS.filter(r => r !== toNote))
     .slice(0, 3)
     .map(r => r + suffix);
@@ -55,6 +54,7 @@ export function nextChordQuestion() {
     question: `What is the ${toLabel}?`,
     options: shuffle([toChord, ...distractors]),
     correct: toChord,
+    suffix,
     explanation: `${toNote} is a P4 above ${fromNote}`,
     playRoot: iiRoot,
     playIntervals: [0, 3, 7, 10],
@@ -63,7 +63,6 @@ export function nextChordQuestion() {
 
 // ---------------------------------------------------------------------------
 // Drill 2 — Guide tones: 3rd & 7th of a chord
-// These define the chord quality and drive voice-leading in rootless comping
 // ---------------------------------------------------------------------------
 export function guideToneQuestion() {
   const root = randomRoot();
@@ -81,12 +80,11 @@ export function guideToneQuestion() {
   const seventh = noteName(idx + ct.seventhSemi);
   const correct = `${third} & ${seventh}`;
 
-  // Distractors use plausible-but-wrong intervals so the learner must think
   const wrongCombos = [
-    [noteName(idx + 2), seventh],           // 9th instead of 3rd
-    [third,            noteName(idx + 7)],  // 5th instead of 7th
-    [noteName(idx + 5), seventh],           // 4th instead of 3rd
-    [third,            noteName(idx + 9)],  // 6th instead of 7th
+    [noteName(idx + 2), seventh],
+    [third,            noteName(idx + 7)],
+    [noteName(idx + 5), seventh],
+    [third,            noteName(idx + 9)],
   ];
   const distractors = shuffle(
     wrongCombos.map(([a, b]) => `${a} & ${b}`).filter(s => s !== correct)
@@ -107,13 +105,11 @@ export function guideToneQuestion() {
 
 // ---------------------------------------------------------------------------
 // Drill 3 — Rootless voicings: identify the top note
-// All four voicing tones are offered as choices — you pick the highest one
 // ---------------------------------------------------------------------------
 export function voicingTopNoteQuestion() {
   const root = randomRoot();
   const idx  = rootIdx(root);
 
-  // Semitone intervals from root, sorted low→high; last element = top note
   const voicings = [
     { chord: `${root}m7`,   type: 'Type A', tones: [3, 7, 10, 14],  desc: '♭3–5–♭7–9',   topName: '9th'  },
     { chord: `${root}m7`,   type: 'Type B', tones: [7, 10, 14, 17], desc: '5–♭7–9–11',    topName: '11th' },
@@ -141,7 +137,7 @@ export function voicingTopNoteQuestion() {
 }
 
 // ---------------------------------------------------------------------------
-// Drill 4 — Altered extensions: ♭9 / ♯9 / ♯11 / ♭13 over a dominant 7th
+// Drill 4 — Altered extensions
 // ---------------------------------------------------------------------------
 export function altExtensionQuestion() {
   const root = randomRoot();
