@@ -36,7 +36,6 @@
       timer = setTimeout(next, 1800);
     } else {
       streak = 0;
-      // wrong — wait for manual Next
     }
   }
 
@@ -46,12 +45,11 @@
 
   function onKeydown(e) {
     if (!q) return;
-    // After answering: Enter or → to advance
     if (selected !== null && (e.key === 'Enter' || e.key === 'ArrowRight')) {
       e.preventDefault(); next(); return;
     }
     if (selected !== null) return;
-    // NoteWheel handles its own keyboard for nextChord drill
+    // 1–4 shortcuts only for the 4-option drills
     if (q.drillType !== 'nextChord') {
       const n = parseInt(e.key);
       if (n >= 1 && n <= q.options.length) { pick(q.options[n - 1]); return; }
@@ -66,7 +64,7 @@
 
 <div class="min-h-[100dvh] bg-slate-900 text-slate-100 flex flex-col select-none">
 
-  <!-- ── Header ────────────────────────────────────────────────── -->
+  <!-- ── Header -->
   <header class="px-4 pt-4 pb-2 border-b border-slate-800 safe-top">
     <div class="flex items-baseline justify-between mb-3">
       <h1 class="text-amber-400 font-bold text-xl tracking-tight">ii–V–I Trainer</h1>
@@ -88,7 +86,7 @@
     </div>
   </header>
 
-  <!-- ── Main ──────────────────────────────────────────────────── -->
+  <!-- ── Main -->
   {#if q}
   <main class="flex-1 flex flex-col px-4 py-5 gap-4 max-w-lg mx-auto w-full">
 
@@ -102,67 +100,53 @@
         title="Play chord (Space or P)"
         class="absolute top-4 right-4 w-10 h-10 rounded-full bg-slate-700
                hover:bg-amber-400 hover:text-slate-900
-               flex items-center justify-center text-amber-400
-               transition-colors text-base"
+               flex items-center justify-center text-amber-400 transition-colors"
       >▶</button>
     </div>
 
     <!-- Answer area -->
-    {#if selected === null}
-      {#if q.drillType === 'nextChord'}
-        <!-- Chromatic strip picker — swipe or tap neighbours to scroll -->
-        <NoteWheel suffix={q.suffix} onPick={pick} />
-      {:else}
-        <!-- 2×2 multiple-choice grid -->
-        <div class="grid grid-cols-2 gap-3">
-          {#each q.options as opt, i}
-            <button
-              onclick={() => pick(opt)}
-              class="py-5 px-3 rounded-xl font-bold text-xl text-center relative
-                     bg-slate-700 text-slate-100 active:scale-95 hover:bg-slate-600
-                     transition-all duration-200"
-            >
-              <span class="absolute top-1.5 left-2 text-xs text-slate-500">{i + 1}</span>
-              {opt}
-            </button>
-          {/each}
-        </div>
-      {/if}
+    {#if q.drillType === 'nextChord'}
+      <!-- 12-note chromatic grid; handles both picking and reveal in-place -->
+      <NoteWheel
+        suffix={q.suffix}
+        onPick={pick}
+        selected={selected}
+        correct={q.correct}
+      />
+    {:else if selected === null}
+      <!-- 4-option grid (picking) -->
+      <div class="grid grid-cols-2 gap-3">
+        {#each q.options as opt, i}
+          <button
+            onclick={() => pick(opt)}
+            class="py-5 px-3 rounded-xl font-bold text-xl text-center relative
+                   bg-slate-700 text-slate-100 active:scale-95 hover:bg-slate-600
+                   transition-all duration-200"
+          >
+            <span class="absolute top-1.5 left-2 text-xs text-slate-500">{i + 1}</span>
+            {opt}
+          </button>
+        {/each}
+      </div>
     {:else}
-      <!-- Reveal: highlight correct (and wrong) in the grid for non-wheel drills -->
-      {#if q.drillType !== 'nextChord'}
-        <div class="grid grid-cols-2 gap-3">
-          {#each q.options as opt}
-            {@const isCorrect = opt === q.correct}
-            {@const isWrong   = opt === selected && !isCorrect}
-            <div
-              class="py-5 px-3 rounded-xl font-bold text-xl text-center
-                     transition-all duration-200
-                     {isCorrect
-                       ? 'bg-emerald-500 text-white ring-2 ring-emerald-300 scale-105'
-                       : isWrong
-                       ? 'bg-red-500 text-white'
-                       : 'bg-slate-800 text-slate-600'}"
-            >{opt}</div>
-          {/each}
-        </div>
-      {:else}
-        <!-- Wheel result card -->
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 text-center">
-          <div class="text-3xl font-bold
-                      {selected === q.correct ? 'text-emerald-400' : 'text-red-400'}">
-            {selected}
-          </div>
-          {#if selected !== q.correct}
-            <div class="text-slate-400 text-sm mt-1">
-              Correct was <span class="text-emerald-400 font-semibold">{q.correct}</span>
-            </div>
-          {/if}
-        </div>
-      {/if}
+      <!-- 4-option grid (reveal) -->
+      <div class="grid grid-cols-2 gap-3">
+        {#each q.options as opt}
+          {@const isCorrect = opt === q.correct}
+          {@const isWrong   = opt === selected && !isCorrect}
+          <div class="py-5 px-3 rounded-xl font-bold text-xl text-center
+                      transition-all duration-200
+                      {isCorrect
+                        ? 'bg-emerald-500 text-white ring-2 ring-emerald-300 scale-105'
+                        : isWrong
+                        ? 'bg-red-500 text-white'
+                        : 'bg-slate-800 text-slate-600'}"
+          >{opt}</div>
+        {/each}
+      </div>
     {/if}
 
-    <!-- Feedback + Next -->
+    <!-- Feedback row -->
     {#if selected !== null}
       {@const wasCorrect = selected === q.correct}
       <div class="flex items-center gap-3 px-1">
@@ -185,7 +169,7 @@
   </main>
   {/if}
 
-  <!-- ── Footer stats ──────────────────────────────────────────── -->
+  <!-- ── Footer stats -->
   <footer class="px-6 py-4 border-t border-slate-800 flex justify-around safe-bottom">
     <div class="text-center">
       <div class="text-2xl font-bold text-amber-400">
