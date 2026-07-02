@@ -1,4 +1,3 @@
-// 12 chromatic roots in jazz-preferred notation (flats for flat keys)
 export const ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
 export function noteName(semitones) {
@@ -24,14 +23,12 @@ function randomRoot() {
   return ROOTS[Math.floor(Math.random() * 12)];
 }
 
-// ---------------------------------------------------------------------------
-// Drill 1 — ii→V or V→I  (roots always move P4 upward)
-// ---------------------------------------------------------------------------
+// Drill 1 — ii→V or V→I (roots always move P4 upward)
 export function nextChordQuestion() {
   const iiRoot = randomRoot();
   const iiIdx  = rootIdx(iiRoot);
-  const vRoot  = noteName(iiIdx + 5);   // P4 above ii
-  const iRoot  = noteName(iiIdx + 10);  // P4 above V
+  const vRoot  = noteName(iiIdx + 5);
+  const iRoot  = noteName(iiIdx + 10);
 
   const isIiToV = Math.random() < 0.5;
 
@@ -41,11 +38,10 @@ export function nextChordQuestion() {
   const toLabel   = isIiToV ? 'V7'          : 'Imaj7';
   const toNote    = isIiToV ? vRoot         : iRoot;
   const fromNote  = isIiToV ? iiRoot        : vRoot;
-  const suffix    = toChord.slice(toNote.length);  // '7' or 'maj7'
+  const suffix    = toChord.slice(toNote.length);
 
   const distractors = shuffle(ROOTS.filter(r => r !== toNote))
-    .slice(0, 3)
-    .map(r => r + suffix);
+    .slice(0, 3).map(r => r + suffix);
 
   return {
     drillType: 'nextChord',
@@ -61,9 +57,7 @@ export function nextChordQuestion() {
   };
 }
 
-// ---------------------------------------------------------------------------
 // Drill 2 — Guide tones: 3rd & 7th of a chord
-// ---------------------------------------------------------------------------
 export function guideToneQuestion() {
   const root = randomRoot();
   const idx  = rootIdx(root);
@@ -75,7 +69,6 @@ export function guideToneQuestion() {
   ];
   const ct    = types[Math.floor(Math.random() * types.length)];
   const chord = `${root}${ct.suffix}`;
-
   const third   = noteName(idx + ct.thirdSemi);
   const seventh = noteName(idx + ct.seventhSemi);
   const correct = `${third} & ${seventh}`;
@@ -103,9 +96,7 @@ export function guideToneQuestion() {
   };
 }
 
-// ---------------------------------------------------------------------------
 // Drill 3 — Rootless voicings: identify the top note
-// ---------------------------------------------------------------------------
 export function voicingTopNoteQuestion() {
   const root = randomRoot();
   const idx  = rootIdx(root);
@@ -119,8 +110,8 @@ export function voicingTopNoteQuestion() {
     { chord: `${root}maj7`, type: 'Type B', tones: [7, 11, 14, 18], desc: '5–7–9–♯11',    topName: '♯11'  },
   ];
 
-  const v       = voicings[Math.floor(Math.random() * voicings.length)];
-  const notes   = v.tones.map(t => noteName(idx + t));
+  const v     = voicings[Math.floor(Math.random() * voicings.length)];
+  const notes = v.tones.map(t => noteName(idx + t));
   const correct = notes[notes.length - 1];
 
   return {
@@ -136,9 +127,7 @@ export function voicingTopNoteQuestion() {
   };
 }
 
-// ---------------------------------------------------------------------------
 // Drill 4 — Altered extensions
-// ---------------------------------------------------------------------------
 export function altExtensionQuestion() {
   const root = randomRoot();
   const idx  = rootIdx(root);
